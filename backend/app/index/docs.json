@@ -1,0 +1,14 @@
+[
+  {
+    "id": "data/sample_2.txt",
+    "meta": {
+      "path": "data/sample_2.txt"
+    }
+  },
+  {
+    "id": "data/sample_1.txt",
+    "meta": {
+      "path": "data/sample_1.txt"
+    }
+  }
+]
