@@ -1,0 +1,43 @@
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+.env
+.env.*
+
+# Backend indexes and artifacts
+backend/app/index/
+backend/.env
+
+# Node/React Native
+node_modules/
+yarn.lock
+package-lock.json
+npm-debug.log*
+expo/
+*.expo*
+
+# Android
+/mobile-app/android/.gradle/
+/mobile-app/android/captures/
+/mobile-app/android/.idea/
+/mobile-app/android/local.properties
+/mobile-app/android/app/build/
+
+# iOS
+/mobile-app/ios/Pods/
+/mobile-app/ios/build/
+/mobile-app/ios/*.xcworkspace
+/mobile-app/ios/DerivedData/
+
+# Editors
+.vscode/
+.idea/
