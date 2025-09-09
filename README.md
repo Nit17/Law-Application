@@ -85,5 +85,3 @@ Informational only – not legal advice. See `docs/legal_disclaimers.md`.
 ## License
 TBD.
 
----
-Contributions welcome once license is defined.
