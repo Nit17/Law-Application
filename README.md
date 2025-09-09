@@ -10,6 +10,8 @@ Customised open-source legal Retrieval-Augmented Generation (RAG) backend for In
   - `POST /embed/build` – build sentence-transformer embedding index (optional)
   - `POST /embed/query` – embedding similarity search (optional)
   - `POST /generate-stream/` – streaming token generation (transformers backend)
+  - `POST /hybrid/` – hybrid TF‑IDF + embedding score fusion
+  - `POST /warm/` – preload model (and optionally embeddings)
 - Lightweight TF‑IDF vector store (scikit‑learn)
 - Pluggable LLM abstraction (`backend/app/core/llm.py`) – future backends (llama.cpp, vLLM) can be added
 - Optional LoRA fine‑tuning script (`backend/scripts/finetune_lora.py`)
@@ -88,16 +90,25 @@ python -m backend.scripts.merge_lora_adapter \
 export LLM_MODEL=models/merged/tinyllama-run1
 ```
 
+## Additional Endpoints
+- `/embed/build`, `/embed/query` – dense embeddings
+- `/hybrid/` – fused ranking
+- `/warm/` – warm start (model + embeddings load)
+- `/generate-stream/` – streaming tokens
+
+## Logging
+Token/request metadata appended to `backend/logs/token_usage.jsonl` by middleware.
+
 ## Extending Models
-- Add llama.cpp: create new backend in `core/llm_<backend>.py` and route selection env var
-- Add embedding/hybrid retrieval: introduce `EmbeddingsStore` side-by-side with TF‑IDF
-- Add streaming: wrap generate with token iterator (transformers `streamer=True`)
+- Add new backend: create `core/llm_<backend>.py` and dispatch in env var
+- Add custom embed model: build with `embed/build?model_name=<hf_model>`
+- Add streaming improvements: implement callback for llama.cpp
 
 ## Roadmap
-- Hybrid ranking (TF‑IDF + embeddings)
-- Dense embedding upgrade (legal-specific model)
-- Citation grounding & answer evaluation
-- Model adapter loading (LoRA merge at runtime)
+- Reranker integration (cross-encoder or ColBERT-lite)
+- Dense legal-specific embedding model
+- Citation grounding & evaluation harness
+- User/session scoped usage metrics & quotas
 - Mobile client integration + offline packs
 
 ## Disclaimer

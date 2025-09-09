@@ -175,3 +175,16 @@ def stream_generate(question: str, contexts: List[str]) -> Generator[str, None, 
         t.join()
     except Exception as e:  # pragma: no cover
         yield f"[streaming error: {e}]"
+
+def get_config() -> Dict[str, Any]:
+    return {
+        "model": DEFAULT_MODEL,
+        "backend": BACKEND,
+        "device": _select_device(),
+        "max_input_tokens": MAX_INPUT_TOKENS,
+        "max_generation_tokens": MAX_GENERATION_TOKENS,
+        "temperature": TEMPERATURE,
+        "top_p": TOP_P,
+        "lora_adapter": LORA_ADAPTER,
+        "lora_merge": LORA_MERGE,
+    }
