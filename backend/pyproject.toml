@@ -26,12 +26,3 @@ llm = [
     "datasets>=2.19.0",
     "torch>=2.1.0",
 ]
-embeddings = [
-    "sentence-transformers>=2.7.0",
-]
-llamacpp = [
-    "llama-cpp-python>=0.2.74",
-]
-dev = [
-    "pytest>=8.2.0",
-]
