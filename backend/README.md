@@ -11,3 +11,5 @@ Dev
 Notes
 - TF‑IDF is a starter. Swap to dense embeddings later.
 - Index is persisted under `backend/app/index/`.
+
+
