@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import ingest, query, generate
+from .routers import ingest, query, generate, embed, hybrid, warm, generate_stream
 
 app = FastAPI(title="Legal RAG Backend", version="0.1.0")
 
@@ -16,6 +16,10 @@ app.add_middleware(
 app.include_router(ingest.router, prefix="/ingest", tags=["ingest"])
 app.include_router(query.router, prefix="/query", tags=["query"])
 app.include_router(generate.router, prefix="/generate", tags=["generate"])
+app.include_router(embed.router, prefix="/embed", tags=["embed"])
+app.include_router(hybrid.router, prefix="/hybrid", tags=["hybrid"])
+app.include_router(warm.router, prefix="/warm", tags=["warm"])
+app.include_router(generate_stream.router, prefix="/generate_stream", tags=["generate_stream"])
 
 @app.get("/")
 def root():

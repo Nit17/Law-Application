@@ -6,8 +6,11 @@ from typing import List
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+import logging
 from ..core.vector_store import TfidfStore
 from ..core.embedding_store import EmbeddingStore
+
+logger = logging.getLogger("warm")
 
 router = APIRouter()
 INDEX_DIR = Path(__file__).resolve().parents[1] / "index"

@@ -6,7 +6,10 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+import logging
 from ..core.vector_store import TfidfStore
+
+logger = logging.getLogger("query")
 
 router = APIRouter()
 

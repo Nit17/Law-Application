@@ -7,7 +7,10 @@ from typing import List
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+import logging
 from ..core.vector_store import TfidfStore, Document
+
+logger = logging.getLogger("ingest")
 
 router = APIRouter()
 

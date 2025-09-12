@@ -26,7 +26,8 @@ class HybridRetriever:
 
 		try:
 			emb_res = self.emb.search(q, k=k)
-		except RuntimeError:
+		except Exception:
+			# any embedding error -> fallback to TF-IDF-only results
 			return tf_res
 
 		# Map by id

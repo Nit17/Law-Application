@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 """LLM loading abstraction with pluggable backends.
 
-Current default: TinyLlama or any causal instruction model from Hugging Face.
-Optional future backends: llama.cpp, vLLM, OpenAI-compatible gateways.
+Supports two backends:
+- OpenAI-compatible API when `OPENAI_API_KEY` is set (preferred for quick runs).
+- Local Hugging Face transformer models (default) when OpenAI key is absent.
 
 Design goals:
 - Lazy singleton load (first generate call)
 - Minimal dependency footprint if user doesn't install LLM extras
 - Clear error guidance when extras missing
 """
-from __future__ import annotations
+
+import logging
 
 from dataclasses import dataclass
 from functools import lru_cache
@@ -22,6 +26,14 @@ except Exception:  # pragma: no cover - we handle absence gracefully
     AutoTokenizer = None  # type: ignore
     AutoModelForCausalLM = None  # type: ignore
     torch = None  # type: ignore
+
+try:
+    import openai
+except Exception:
+    openai = None
+
+logger = logging.getLogger("llm")
+logging.basicConfig(level=logging.INFO)
 
 DEFAULT_MODEL = os.getenv("LLM_MODEL", "TinyLlama/TinyLlama-1.1B-Chat-v1.0")
 MAX_INPUT_TOKENS = int(os.getenv("LLM_MAX_INPUT_TOKENS", "2048"))
@@ -81,9 +93,33 @@ def build_prompt(question: str, contexts: List[str]) -> str:
 
 
 def generate(question: str, contexts: List[str]) -> GenerationResult:
-    tokenizer, model, device = _load_model()
+    # Prefer OpenAI-like API if API key present
+    openai_key = os.getenv("OPENAI_API_KEY")
     prompt = build_prompt(question, contexts)
+    if openai_key and openai is not None:
+        logger.info("Using OpenAI backend for generation")
+        openai.api_key = openai_key
+        resp = openai.ChatCompletion.create(
+            model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
+            messages=[{"role": "system", "content": prompt}],
+            max_tokens=MAX_GENERATION_TOKENS,
+            temperature=TEMPERATURE,
+            top_p=TOP_P,
+        )
+        completion = resp["choices"][0]["message"]["content"].strip()
+        usage = resp.get("usage", {})
+        return GenerationResult(
+            prompt=prompt,
+            completion=completion,
+            model=resp.get("model", os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")),
+            tokens_in=usage.get("prompt_tokens", 0),
+            tokens_out=usage.get("completion_tokens", 0),
+            usage=usage,
+        )
 
+    # Fallback to local HF model
+    logger.info("Using local HuggingFace backend for generation")
+    tokenizer, model, device = _load_model()
     inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=MAX_INPUT_TOKENS)
     input_ids = inputs["input_ids"].to(model.device)
     attn_mask = inputs["attention_mask"].to(model.device)

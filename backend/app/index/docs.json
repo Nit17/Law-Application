@@ -1,14 +1,14 @@
 [
   {
-    "id": "data/sample_2.txt",
+    "id": "sample_1.txt",
     "meta": {
-      "path": "data/sample_2.txt"
+      "path": "/Users/nithinbm/PersonalProduct/backend/data/sample_1.txt"
     }
   },
   {
-    "id": "data/sample_1.txt",
+    "id": "sample_2.txt",
     "meta": {
-      "path": "data/sample_1.txt"
+      "path": "/Users/nithinbm/PersonalProduct/backend/data/sample_2.txt"
     }
   }
 ]

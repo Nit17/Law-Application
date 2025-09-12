@@ -6,7 +6,10 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+import logging
 from ..core.embedding_store import EmbeddingStore, TextRecord
+
+logger = logging.getLogger("embed")
 
 router = APIRouter()
 
