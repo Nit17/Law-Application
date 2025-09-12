@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app:rw
+      - ./backend/app/index:/app/backend/app/index:rw
+      - ./.env.local:/app/.env:ro
+    environment:
+      - ENV_FILE=.env.local
+    # For GPU dev you can override dockerfile to Dockerfile.gpu
+    # build:
+    #   context: ./backend
+    #   dockerfile: Dockerfile.gpu

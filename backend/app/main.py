@@ -1,4 +1,8 @@
 from fastapi import FastAPI
+from pathlib import Path
+import os
+
+from .core import llm as _llm
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import ingest, query, generate, embed, hybrid, warm, generate_stream
 
@@ -24,3 +28,18 @@ app.include_router(generate_stream.router, prefix="/generate_stream", tags=["gen
 @app.get("/")
 def root():
     return {"status": "ok", "service": "legal-rag-backend"}
+
+
+@app.get("/health")
+def health():
+    """Health endpoint for readiness checks.
+
+    - index_ready: True if any files exist under `app/index`
+    - model_ready: True if OPENAI_API_KEY is set or local HF tokenizer is available
+    """
+    idx = Path(__file__).resolve().parents[1] / "index"
+    index_ready = idx.exists() and any(idx.iterdir())
+    # model readiness: either OpenAI API key present or HF tokenizer available
+    model_ready = bool(os.getenv("OPENAI_API_KEY")) or (getattr(_llm, "AutoTokenizer", None) is not None)
+    status = "ok" if index_ready and model_ready else "degraded" if index_ready else "starting"
+    return {"status": status, "index_ready": index_ready, "model_ready": model_ready}
