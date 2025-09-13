@@ -1,7 +1,15 @@
+import os
 import streamlit as st
 import requests
 
-BACKEND_URL = st.secrets.get("backend_url", "http://127.0.0.1:8000")
+# st.secrets may not exist in all environments (CI/local without secrets.toml)
+# fallback to environment variable BACKEND_URL or default
+try:
+    BACKEND_URL = st.secrets.get("backend_url", None)
+except Exception:
+    BACKEND_URL = None
+if not BACKEND_URL:
+    BACKEND_URL = os.environ.get("BACKEND_URL", "http://127.0.0.1:8000")
 
 st.title("Law-Application — RAG Demo")
 
