@@ -37,6 +37,7 @@ def health():
     - index_ready: True if any files exist under `app/index`
     - model_ready: True if OPENAI_API_KEY is set or local HF tokenizer is available
     """
+    # Path(__file__).resolve().parents[1] points to backend/app, ensure we check the 'index' dir there
     idx = Path(__file__).resolve().parents[1] / "index"
     index_ready = idx.exists() and any(idx.iterdir())
     # model readiness: either OpenAI API key present or HF tokenizer available
