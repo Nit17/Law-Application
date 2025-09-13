@@ -2,8 +2,7 @@ import os
 import streamlit as st
 import requests
 
-# st.secrets may not exist in all environments (CI/local without secrets.toml)
-# fallback to environment variable BACKEND_URL or default
+# determine backend URL
 try:
     BACKEND_URL = st.secrets.get("backend_url", None)
 except Exception:
@@ -11,60 +10,28 @@ except Exception:
 if not BACKEND_URL:
     BACKEND_URL = os.environ.get("BACKEND_URL", "http://127.0.0.1:8000")
 
-st.title("Law-Application — RAG Demo")
+st.set_page_config(page_title="Law RAG — Ask", layout="centered")
+st.title("Ask a legal question")
 
-question = st.text_area("Question", value="What is negligence under Indian law?", height=120)
-top_k = st.slider("Top-k contexts", 1, 8, 3)
+question = st.text_input("Your question", value="What is negligence under Indian law?")
+top_k = 3
 
-st.markdown("---")
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("Ingest & Warm"):
-        with st.spinner("Ingesting documents and warming embeddings..."):
+if st.button("Ask"):
+    if not question.strip():
+        st.error("Please enter a question")
+    else:
+        with st.spinner("Generating answer..."):
             try:
-                r1 = requests.post(f"{BACKEND_URL}/ingest/", timeout=30)
-                r1.raise_for_status()
-                ingest_resp = r1.json()
+                resp = requests.post(f"{BACKEND_URL}/generate/", json={"question": question, "top_k": top_k}, timeout=60)
+                resp.raise_for_status()
+                data = resp.json()
             except Exception as e:
-                st.error(f"Ingest failed: {e}")
-                ingest_resp = None
+                st.error(f"Request failed: {e}")
+                data = None
 
-            try:
-                # warm expects a body: {"queries": ["...", ...]}
-                r2 = requests.post(f"{BACKEND_URL}/warm/", json={"queries": [question]}, timeout=60)
-                r2.raise_for_status()
-                warm_resp = r2.json()
-            except Exception as e:
-                st.error(f"Warm failed: {e}")
-                warm_resp = None
-
-        if ingest_resp is not None:
-            st.success(f"Ingested {ingest_resp.get('count')} documents")
-        if warm_resp is not None:
-            st.success(f"Warmed: {warm_resp}")
-
-with col2:
-    if st.button("Check Health"):
-        try:
-            r = requests.get(f"{BACKEND_URL}/health", timeout=5)
-            r.raise_for_status()
-            st.json(r.json())
-        except Exception as e:
-            st.error(f"Health check failed: {e}")
-
-if st.button("Generate"):
-    with st.spinner("Calling backend..."):
-        try:
-            resp = requests.post(f"{BACKEND_URL}/generate/", json={"question": question, "top_k": top_k}, timeout=60)
-            resp.raise_for_status()
-            data = resp.json()
-        except Exception as e:
-            st.error(f"Request failed: {e}")
-        else:
+        if data:
             st.subheader("Answer")
             st.write(data.get("answer"))
-            st.subheader("Model")
-            st.write(data.get("model"))
             st.subheader("Contexts")
             for i, c in enumerate(data.get("contexts", []), start=1):
                 st.markdown(f"**Context {i}:**\n\n{c}")
