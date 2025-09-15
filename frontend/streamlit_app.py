@@ -106,6 +106,12 @@ with st.sidebar:
     # Use the possibly updated backend URL
     BACKEND_URL = st.session_state.backend_url or BACKEND_URL
     st.caption(f"Active backend: {BACKEND_URL}")
+    # Helpful hint for cloud users
+    if BACKEND_URL.startswith("http://127.0.0.1") or BACKEND_URL.startswith("http://localhost"):
+        st.warning(
+            "This URL points to your local machine. If you're running this app on Streamlit Cloud, set a public backend URL in App Secrets (backend_url) or enter it here.",
+            icon="⚠️",
+        )
     # Connection test / health
     if st.button("Test connection"):
         test = get_health(BACKEND_URL)

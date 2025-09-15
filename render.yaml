@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: law-app-backend
+    env: docker
+    plan: free
+    autoDeploy: true
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: LLM_DEVICE
+        value: cpu
+    # Optional persistent disk for index files
+    disks:
+      - name: index
+        mountPath: /app/app/index
+        sizeGB: 1

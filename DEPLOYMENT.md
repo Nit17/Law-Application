@@ -30,12 +30,16 @@ Optional: map a volume for persistent index files:
 docker run -p 8000:8000 -v law_index:/app/app/index your-docker-user/law-backend:latest
 ```
 
-Render example (Docker):
-- New Web Service
-- Use your container image
-- Port: 8000
-- Health check: /health
-- Environment: keep defaults; set `LLM_DEVICE=cpu` (or `auto`)
+Render deployment (Blueprint):
+
+1. Push your repo to GitHub.
+2. In Render, click "New +" → "Blueprint" and point it at your repo.
+3. Render reads `render.yaml` and provisions the service:
+  - Name: law-app-backend
+  - Health check: /health
+  - Plan: free (change as needed)
+  - Persistent disk mounted at `/app/app/index` to keep index files
+4. After deploy, copy the public URL (e.g., https://law-app-backend.onrender.com)
 
 Fly.io example (Dockerfile):
 - `fly launch` in `backend/`, expose port 8000, deploy
@@ -65,6 +69,12 @@ You can copy `frontend/.streamlit/secrets.toml.example` locally for reference.
 - Try a query:
   - Open the Streamlit app, ensure Status shows green.
   - Ask a question using streaming; if issues, toggle off streaming to use `/generate`.
+
+Quick share link
+
+- Streamlit Cloud URL: shown on your app page (e.g., https://your-app.streamlit.app)
+- Backend URL: the Render URL from step 1
+- Share only the Streamlit Cloud URL with users; ensure the backend is up (free tier may sleep).
 
 ## 4) Troubleshooting
 
