@@ -87,7 +87,18 @@ def stream_generate(question: str, top_k: int) -> Generator[str, None, None]:
 # Sidebar controls
 with st.sidebar:
     st.header("Settings")
-    st.caption(f"Backend: {BACKEND_URL}")
+    # Backend URL override
+    if "backend_url" not in st.session_state:
+        st.session_state.backend_url = BACKEND_URL
+    st.session_state.backend_url = st.text_input(
+        "Backend URL",
+        value=st.session_state.backend_url,
+        help="FastAPI base URL. For local dev: http://127.0.0.1:8000",
+    ).strip()
+
+    # Use the possibly updated backend URL
+    BACKEND_URL = st.session_state.backend_url or BACKEND_URL
+    st.caption(f"Active backend: {BACKEND_URL}")
     health = get_health()
     status = health.get("status", "unknown")
     color = "green" if status in {"ok", "degraded"} else "red"
