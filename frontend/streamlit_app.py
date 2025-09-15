@@ -28,19 +28,26 @@ def _spinner(msg: str):
         yield
 
 
-def get_health() -> Dict:
+def get_health(base_url: str) -> Dict:
     try:
-        r = requests.get(f"{BACKEND_URL}/health", timeout=5)
+        r = requests.get(f"{base_url}/health", timeout=5)
         r.raise_for_status()
         return r.json()
-    except Exception:
-        return {"status": "offline", "index_ready": False, "model_ready": False}
+    except Exception as e:
+        # Return error details for debugging in UI
+        return {
+            "status": "offline",
+            "index_ready": False,
+            "model_ready": False,
+            "error": str(e),
+            "url": f"{base_url}/health",
+        }
 
 
-def call_generate(question: str, top_k: int) -> Optional[Dict]:
+def call_generate(question: str, top_k: int, base_url: str) -> Optional[Dict]:
     try:
         resp = requests.post(
-            f"{BACKEND_URL}/generate/",
+            f"{base_url}/generate/",
             json={"question": question, "top_k": top_k},
             timeout=90,
         )
@@ -51,14 +58,14 @@ def call_generate(question: str, top_k: int) -> Optional[Dict]:
         return None
 
 
-def stream_generate(question: str, top_k: int) -> Generator[str, None, None]:
+def stream_generate(question: str, top_k: int, base_url: str) -> Generator[str, None, None]:
     """Yield chunks of assistant text by reading Server-Sent Events from backend.
 
     Backend emits lines like: 'data: <text>\n\n'. This function parses and yields the data content.
     """
     try:
         with requests.post(
-            f"{BACKEND_URL}/generate_stream/",
+            f"{base_url}/generate_stream/",
             json={"question": question, "top_k": top_k},
             stream=True,
             timeout=90,
@@ -99,7 +106,15 @@ with st.sidebar:
     # Use the possibly updated backend URL
     BACKEND_URL = st.session_state.backend_url or BACKEND_URL
     st.caption(f"Active backend: {BACKEND_URL}")
-    health = get_health()
+    # Connection test / health
+    if st.button("Test connection"):
+        test = get_health(BACKEND_URL)
+        if test.get("status") in {"ok", "degraded"}:
+            st.success(f"Connected: {test}")
+        else:
+            st.error(f"Health failed: {test}")
+
+    health = get_health(BACKEND_URL)
     status = health.get("status", "unknown")
     color = "green" if status in {"ok", "degraded"} else "red"
     st.markdown(f"Status: <span style='color:{color}'><strong>{status}</strong></span>", unsafe_allow_html=True)
@@ -139,7 +154,7 @@ if prompt := st.chat_input("Type your legal question..."):
         if use_stream:
             # Stream tokens
             acc = ""
-            for chunk in stream_generate(prompt, top_k=top_k):
+            for chunk in stream_generate(prompt, top_k=top_k, base_url=BACKEND_URL):
                 acc += chunk
                 placeholder.markdown(acc)
             answer_text = acc.strip()
@@ -147,7 +162,7 @@ if prompt := st.chat_input("Type your legal question..."):
             contexts = []
         else:
             with _spinner("Thinking..."):
-                data = call_generate(prompt, top_k=top_k)
+                data = call_generate(prompt, top_k=top_k, base_url=BACKEND_URL)
             if not data:
                 st.stop()
             answer_text = data.get("answer", "")
