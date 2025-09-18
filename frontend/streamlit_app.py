@@ -196,3 +196,4 @@ if prompt := st.chat_input("Type your legal question..."):
             st.caption(
                 f"Model: {meta.get('model')} • Tokens in: {meta.get('tokens_in')} • Tokens out: {meta.get('tokens_out')} • Prompt tokens: {meta.get('prompt_tokens')}"
             )
+
