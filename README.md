@@ -1,6 +1,5 @@
 # Law-Application
 
-
 Customised open-source legal Retrieval-Augmented Generation (RAG) backend for Indian law with optional local LLM generation and LoRA fine‑tuning scaffold.
 
 ## Features
